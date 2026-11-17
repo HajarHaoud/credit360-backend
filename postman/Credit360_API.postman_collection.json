@@ -1,0 +1,698 @@
+{
+  "info": {
+    "_postman_id": "c360-full-collection-v1",
+    "name": "Crédit 360° - Banque Populaire REST API",
+    "description": "Référentiel complet des API REST du Backend Crédit 360°.\nContrat pour tests Postman et intégration Frontend Angular.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080", "type": "string" },
+    { "key": "token", "value": "", "type": "string" },
+    { "key": "token_conseiller", "value": "", "type": "string" },
+    { "key": "token_analyste", "value": "", "type": "string" },
+    { "key": "token_responsable", "value": "", "type": "string" },
+    { "key": "token_admin", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "1. Authentification",
+      "item": [
+        {
+          "name": "Login Conseiller",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var data = pm.response.json();",
+                  "if (data.token) {",
+                  "    pm.collectionVariables.set('token_conseiller', data.token);",
+                  "    pm.collectionVariables.set('token', data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"conseiller@credit360.ma\",\n  \"motDePasse\": \"demo1234\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] }
+          }
+        },
+        {
+          "name": "Login Analyste",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var data = pm.response.json();",
+                  "if (data.token) {",
+                  "    pm.collectionVariables.set('token_analyste', data.token);",
+                  "    pm.collectionVariables.set('token', data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"analyste@credit360.ma\",\n  \"motDePasse\": \"demo1234\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] }
+          }
+        },
+        {
+          "name": "Login Responsable",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var data = pm.response.json();",
+                  "if (data.token) {",
+                  "    pm.collectionVariables.set('token_responsable', data.token);",
+                  "    pm.collectionVariables.set('token', data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"responsable@credit360.ma\",\n  \"motDePasse\": \"demo1234\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] }
+          }
+        },
+        {
+          "name": "Login Administrateur",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var data = pm.response.json();",
+                  "if (data.token) {",
+                  "    pm.collectionVariables.set('token_admin', data.token);",
+                  "    pm.collectionVariables.set('token', data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@credit360.ma\",\n  \"motDePasse\": \"demo1234\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] }
+          }
+        },
+        {
+          "name": "Profil Utilisateur Connecté (GET /me)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/auth/me", "host": ["{{baseUrl}}"], "path": ["api", "auth", "me"] }
+          }
+        },
+        {
+          "name": "Changement de mot de passe",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ancienMotDePasse\": \"demo1234\",\n  \"nouveauMotDePasse\": \"nouveau1234\",\n  \"confirmationMotDePasse\": \"nouveau1234\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/change-password", "host": ["{{baseUrl}}"], "path": ["api", "auth", "change-password"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Référentiel des Crédits",
+      "item": [
+        {
+          "name": "Lister les types de crédits",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/types-credits", "host": ["{{baseUrl}}"], "path": ["api", "types-credits"] }
+          }
+        },
+        {
+          "name": "Détail d'un type (Immobilier)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/types-credits/immobilier", "host": ["{{baseUrl}}"], "path": ["api", "types-credits", "immobilier"] }
+          }
+        },
+        {
+          "name": "Lister les pièces requises (Immobilier)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/types-credits/immobilier/pieces-requises", "host": ["{{baseUrl}}"], "path": ["api", "types-credits", "immobilier", "pieces-requises"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Simulation de Crédit",
+      "item": [
+        {
+          "name": "Paramètres de simulation",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/simulations/parametres", "host": ["{{baseUrl}}"], "path": ["api", "simulations", "parametres"] }
+          }
+        },
+        {
+          "name": "Calculer une simulation",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"typeCreditId\": \"immobilier\",\n  \"montant\": 1000000,\n  \"dureeMois\": 120,\n  \"tauxAnnuel\": 4.5,\n  \"revenuMensuel\": 22000,\n  \"chargesMensuelles\": 2500\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/simulations", "host": ["{{baseUrl}}"], "path": ["api", "simulations"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Gestion des Dossiers",
+      "item": [
+        {
+          "name": "Recherche paginée des dossiers",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/dossiers?page=1&taille=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "dossiers"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "taille", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Dossiers Récents",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/dossiers/recents", "host": ["{{baseUrl}}"], "path": ["api", "dossiers", "recents"] }
+          }
+        },
+        {
+          "name": "Statistiques Dossiers",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/dossiers/stats", "host": ["{{baseUrl}}"], "path": ["api", "dossiers", "stats"] }
+          }
+        },
+        {
+          "name": "Consulter un dossier (CRD00013)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/dossiers/CRD00013", "host": ["{{baseUrl}}"], "path": ["api", "dossiers", "CRD00013"] }
+          }
+        },
+        {
+          "name": "Créer un dossier de crédit",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token_conseiller}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"El Alami\",\n  \"prenom\": \"Tariq\",\n  \"cin\": \"BE123987\",\n  \"telephone\": \"0661998877\",\n  \"email\": \"tariq.elalami@gmail.com\",\n  \"profession\": \"Consultant Senior\",\n  \"adresse\": \"Casablanca Maarif\",\n  \"revenuMensuel\": 28000,\n  \"chargesMensuelles\": 3000,\n  \"typeId\": \"immobilier\",\n  \"montant\": 1200000,\n  \"duree\": 180\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/dossiers", "host": ["{{baseUrl}}"], "path": ["api", "dossiers"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Pièces Justificatives",
+      "item": [
+        {
+          "name": "Consulter la checklist des pièces (CRD00013)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/dossiers/CRD00013/pieces", "host": ["{{baseUrl}}"], "path": ["api", "dossiers", "CRD00013", "pieces"] }
+          }
+        },
+        {
+          "name": "Soumettre le dossier à l'analyse (CRD00013)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_conseiller}}" }],
+            "url": { "raw": "{{baseUrl}}/api/dossiers/CRD00013/soumettre", "host": ["{{baseUrl}}"], "path": ["api", "dossiers", "CRD00013", "soumettre"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Workflow et Décision",
+      "item": [
+        {
+          "name": "Dossiers à traiter (Analyste)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_analyste}}" }],
+            "url": { "raw": "{{baseUrl}}/api/analyses/a-traiter", "host": ["{{baseUrl}}"], "path": ["api", "analyses", "a-traiter"] }
+          }
+        },
+        {
+          "name": "Mes dossiers (Analyste)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_analyste}}" }],
+            "url": { "raw": "{{baseUrl}}/api/analyses/mes-dossiers", "host": ["{{baseUrl}}"], "path": ["api", "analyses", "mes-dossiers"] }
+          }
+        },
+        {
+          "name": "Prendre en charge un dossier (CRD00014)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token_analyste}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"commentaire\": \"Prise en charge pour instruction financière\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/dossiers/CRD00014/prendre-en-charge", "host": ["{{baseUrl}}"], "path": ["api", "dossiers", "CRD00014", "prendre-en-charge"] }
+          }
+        },
+        {
+          "name": "Consulter l'analyse d'un dossier",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/dossiers/CRD00015/analyse", "host": ["{{baseUrl}}"], "path": ["api", "dossiers", "CRD00015", "analyse"] }
+          }
+        },
+        {
+          "name": "Valider un dossier (Décision)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token_responsable}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"typeDecision\": \"VALIDATION\",\n  \"montantAccorde\": 280000,\n  \"dureeAccordee\": 60,\n  \"tauxAccorde\": 5.2,\n  \"motif\": \"Dossier conforme et ratios de solvabilité respectés.\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/dossiers/CRD00015/decisions", "host": ["{{baseUrl}}"], "path": ["api", "dossiers", "CRD00015", "decisions"] }
+          }
+        },
+        {
+          "name": "Historique du dossier (CRD00015)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/dossiers/CRD00015/historique", "host": ["{{baseUrl}}"], "path": ["api", "dossiers", "CRD00015", "historique"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Documents PDF",
+      "item": [
+        {
+          "name": "Générer Fiche d'Analyse (PDF)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"typeDocument\": \"FICHE_ANALYSE\",\n  \"format\": \"PDF\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/dossiers/CRD00013/documents/generer", "host": ["{{baseUrl}}"], "path": ["api", "dossiers", "CRD00013", "documents", "generer"] }
+          }
+        },
+        {
+          "name": "Lister les documents du dossier (CRD00013)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/dossiers/CRD00013/documents", "host": ["{{baseUrl}}"], "path": ["api", "dossiers", "CRD00013", "documents"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. Dashboard et Notifications",
+      "item": [
+        {
+          "name": "Vue Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/dashboard", "host": ["{{baseUrl}}"], "path": ["api", "dashboard"] }
+          }
+        },
+        {
+          "name": "Mes Notifications",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/notifications", "host": ["{{baseUrl}}"], "path": ["api", "notifications"] }
+          }
+        },
+        {
+          "name": "Compteur Non Lues",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/notifications/non-lues/count", "host": ["{{baseUrl}}"], "path": ["api", "notifications", "non-lues", "count"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "9. Alertes et Impayés",
+      "item": [
+        {
+          "name": "Lister les impayés",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/impayes", "host": ["{{baseUrl}}"], "path": ["api", "impayes"] }
+          }
+        },
+        {
+          "name": "Compteur impayés actifs",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/impayes/count", "host": ["{{baseUrl}}"], "path": ["api", "impayes", "count"] }
+          }
+        },
+        {
+          "name": "Détail alerte impayé (Alerte 1)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/impayes/1", "host": ["{{baseUrl}}"], "path": ["api", "impayes", "1"] }
+          }
+        },
+        {
+          "name": "Traiter une alerte (Relance / Promesse de paiement)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nouveauStatut\": \"PREMIER_IMPAYE\",\n  \"nouvelleAction\": \"RELANCE\",\n  \"commentaire\": \"Client contacté par téléphone. Promesse de règlement d'ici vendredi.\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/impayes/1/traiter", "host": ["{{baseUrl}}"], "path": ["api", "impayes", "1", "traiter"] }
+          }
+        },
+        {
+          "name": "Générer et télécharger Lettre de Mise en Demeure (PDF)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/impayes/2/lettre-mise-en-demeure", "host": ["{{baseUrl}}"], "path": ["api", "impayes", "2", "lettre-mise-en-demeure"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "10. Recharges et Nouveau Financement",
+      "item": [
+        {
+          "name": "Lister les opérations de recharge",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/recharges", "host": ["{{baseUrl}}"], "path": ["api", "recharges"] }
+          }
+        },
+        {
+          "name": "Consulter opération RCH00001 (M. Ahmed)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/recharges/RCH00001", "host": ["{{baseUrl}}"], "path": ["api", "recharges", "RCH00001"] }
+          }
+        },
+        {
+          "name": "Simuler une recharge (Maquette Banque Populaire)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"client\": \"M. Ahmed\",\n  \"cin\": \"B543210\",\n  \"telephone\": \"0644556677\",\n  \"creditExistant\": 120000.0,\n  \"soldeRestant\": 60000.0,\n  \"nouveauFinancement\": 200000.0,\n  \"fraisEtAssurance\": 10000.0,\n  \"nouvelleDuree\": 84,\n  \"nouveauTaux\": 5.5\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/recharges/simuler", "host": ["{{baseUrl}}"], "path": ["api", "recharges", "simuler"] }
+          }
+        },
+        {
+          "name": "Valider opération de recharge (Déblocage net client)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/recharges/RCH00001/valider", "host": ["{{baseUrl}}"], "path": ["api", "recharges", "RCH00001", "valider"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "11. Mainlevées et Clôture",
+      "item": [
+        {
+          "name": "Lister les mainlevées et crédits soldés",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/mainlevees", "host": ["{{baseUrl}}"], "path": ["api", "mainlevees"] }
+          }
+        },
+        {
+          "name": "Lister uniquement les crédits soldés",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/mainlevees/soldes", "host": ["{{baseUrl}}"], "path": ["api", "mainlevees", "soldes"] }
+          }
+        },
+        {
+          "name": "Consulter mainlevée MLV00001",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/mainlevees/MLV00001", "host": ["{{baseUrl}}"], "path": ["api", "mainlevees", "MLV00001"] }
+          }
+        },
+        {
+          "name": "Créer demande de mainlevée",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"referenceCredit\": \"CRD00015\",\n  \"client\": \"Laraki Nadia\",\n  \"cin\": \"C456789\",\n  \"typeGarantie\": \"Gage de véhicule automobile\",\n  \"designationBien\": \"Vehicule matricule 12345-B-06\",\n  \"montantInitial\": 280000.0\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/mainlevees", "host": ["{{baseUrl}}"], "path": ["api", "mainlevees"] }
+          }
+        },
+        {
+          "name": "Générer Certificat de Mainlevée (PDF)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/mainlevees/MLV00001/certificat", "host": ["{{baseUrl}}"], "path": ["api", "mainlevees", "MLV00001", "certificat"] }
+          }
+        },
+        {
+          "name": "Confirmer remise au client",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/mainlevees/MLV00001/delivrer", "host": ["{{baseUrl}}"], "path": ["api", "mainlevees", "MLV00001", "delivrer"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "12. Assurances Emprunteur",
+      "item": [
+        {
+          "name": "Lister les contrats d'assurance",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/assurances", "host": ["{{baseUrl}}"], "path": ["api", "assurances"] }
+          }
+        },
+        {
+          "name": "Assurances d'un dossier (CRD00013)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/assurances/dossier/CRD00013", "host": ["{{baseUrl}}"], "path": ["api", "assurances", "dossier", "CRD00013"] }
+          }
+        },
+        {
+          "name": "Proposition automatique d'assurance selon type de crédit",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/assurances/dossier/CRD00013/proposer", "host": ["{{baseUrl}}"], "path": ["api", "assurances", "dossier", "CRD00013", "proposer"] }
+          }
+        },
+        {
+          "name": "Souscrire une assurance",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"referenceDossier\": \"CRD00014\",\n  \"client\": \"Salhi Amine\",\n  \"cin\": \"BK789012\",\n  \"typeAssurance\": \"DECES_INVALIDITE\",\n  \"capitalAssure\": 120000.0,\n  \"tauxPrimePourcent\": 0.35\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/assurances/souscrire", "host": ["{{baseUrl}}"], "path": ["api", "assurances", "souscrire"] }
+          }
+        },
+        {
+          "name": "Activer couverture assurance",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/assurances/ASS00001/activer", "host": ["{{baseUrl}}"], "path": ["api", "assurances", "ASS00001", "activer"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "13. Signature Digitale et Mise en Place (Étapes 4 et 5)",
+      "item": [
+        {
+          "name": "Consulter parcours de signature (CRD00016)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/dossiers/CRD00016/signatures", "host": ["{{baseUrl}}"], "path": ["api", "dossiers", "CRD00016", "signatures"] }
+          }
+        },
+        {
+          "name": "Demander envoi OTP (Client)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/dossiers/CRD00016/signatures/otp?signataire=CLIENT", "host": ["{{baseUrl}}"], "path": ["api", "dossiers", "CRD00016", "signatures", "otp"], "query": [{ "key": "signataire", "value": "CLIENT" }] }
+          }
+        },
+        {
+          "name": "Valider OTP et signer (Client)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"typeSignataire\": \"CLIENT\",\n  \"codeOtp\": \"123456\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/dossiers/CRD00016/signatures/valider", "host": ["{{baseUrl}}"], "path": ["api", "dossiers", "CRD00016", "signatures", "valider"] }
+          }
+        },
+        {
+          "name": "Valider OTP et signer (Conseiller)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"typeSignataire\": \"CONSEILLER\",\n  \"codeOtp\": \"123456\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/dossiers/CRD00016/signatures/valider", "host": ["{{baseUrl}}"], "path": ["api", "dossiers", "CRD00016", "signatures", "valider"] }
+          }
+        },
+        {
+          "name": "Valider OTP et signer (Responsable)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"typeSignataire\": \"RESPONSABLE\",\n  \"codeOtp\": \"123456\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/dossiers/CRD00016/signatures/valider", "host": ["{{baseUrl}}"], "path": ["api", "dossiers", "CRD00016", "signatures", "valider"] }
+          }
+        },
+        {
+          "name": "Étape 5 : Mise en place du crédit (Déblocage des fonds)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/dossiers/CRD00016/mise-en-place", "host": ["{{baseUrl}}"], "path": ["api", "dossiers", "CRD00016", "mise-en-place"] }
+          }
+        }
+      ]
+    }
+  ]
+}
