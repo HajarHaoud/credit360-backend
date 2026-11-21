@@ -12,6 +12,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -52,12 +53,14 @@ public class MainleveeController {
     }
 
     @PostMapping("/{referenceMainlevee}/valider")
+    @PreAuthorize("hasAnyRole('RESPONSABLE', 'ADMINISTRATEUR')")
     @Operation(summary = "Valider la mainlevée (Habilité Engagements)")
     public ResponseEntity<MainleveeDto> valider(@PathVariable("referenceMainlevee") String referenceMainlevee) {
         return ResponseEntity.ok(mainleveeService.valider(referenceMainlevee));
     }
 
     @PostMapping("/{referenceMainlevee}/delivrer")
+    @PreAuthorize("hasAnyRole('RESPONSABLE', 'ADMINISTRATEUR')")
     @Operation(summary = "Confirmer la délivrance et remise de la mainlevée au client")
     public ResponseEntity<MainleveeDto> delivrer(@PathVariable("referenceMainlevee") String referenceMainlevee) {
         return ResponseEntity.ok(mainleveeService.delivrerAuClient(referenceMainlevee));

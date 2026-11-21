@@ -8,6 +8,7 @@ import ma.credit360.web.dto.RechargeCreditDto;
 import ma.credit360.web.dto.SimulerRechargeRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -42,6 +43,7 @@ public class RechargeController {
     }
 
     @PostMapping("/{referenceOperation}/valider")
+    @PreAuthorize("hasAnyRole('RESPONSABLE', 'ADMINISTRATEUR')")
     @Operation(summary = "Valider définitivement l'opération de recharge (déblocage du net client)")
     public ResponseEntity<RechargeCreditDto> valider(@PathVariable("referenceOperation") String referenceOperation) {
         return ResponseEntity.ok(rechargeService.validerOperation(referenceOperation));

@@ -38,6 +38,32 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setContentType("application/json;charset=UTF-8");
+                            response.setStatus(jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED);
+                            response.getWriter().write("""
+                                {
+                                  "statut": 401,
+                                  "erreur": "Non authentifié",
+                                  "message": "Token JWT manquant, expiré ou invalide. Veuillez vous authentifier.",
+                                  "chemin": "%s"
+                                }
+                            """.formatted(request.getRequestURI()));
+                        })
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.setContentType("application/json;charset=UTF-8");
+                            response.setStatus(jakarta.servlet.http.HttpServletResponse.SC_FORBIDDEN);
+                            response.getWriter().write("""
+                                {
+                                  "statut": 403,
+                                  "erreur": "Accès refusé",
+                                  "message": "Vous n'avez pas les habilitations nécessaires pour effectuer cette action.",
+                                  "chemin": "%s"
+                                }
+                            """.formatted(request.getRequestURI()));
+                        })
+                )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/auth/login",
