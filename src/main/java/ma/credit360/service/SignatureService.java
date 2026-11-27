@@ -103,7 +103,23 @@ public class SignatureService {
 
     @Transactional
     public String envoyerOtp(String reference, TypeSignataire typeSignataire) {
+        if (typeSignataire == null) {
+            throw new IllegalArgumentException("Le type de signataire est obligatoire (CLIENT, CONSEILLER, RESPONSABLE)");
+        }
+
         Dossier dossier = dossierService.trouverParReference(reference);
+
+        // Vérification de l'état du dossier
+        if (dossier.getStatut() == StatutDossier.REFUSE || dossier.getStatut() == StatutDossier.ANNULE) {
+            throw new BusinessException("Impossible d'envoyer un code OTP : le dossier est clôturé (" + dossier.getStatut().getLibelle() + ")");
+        }
+        if (dossier.getStatut() == StatutDossier.A_COMPLETER || dossier.getStatut() == StatutDossier.EN_ANALYSE || dossier.getStatut() == StatutDossier.COMPLEMENT_REQUIS) {
+            throw new BusinessException("Le dossier n'a pas encore été validé par le comité d'octroi (statut actuel: " + dossier.getStatut().getLibelle() + ")");
+        }
+
+        // Auto-initialiser les signataires si non encore créés
+        initialiserOuObtenirParcours(reference);
+
         SignatureDigitale sig = signatureDigitaleRepository.findByDossierAndTypeSignataire(dossier, typeSignataire)
                 .orElseThrow(() -> new ResourceNotFoundException("Signataire " + typeSignataire + " introuvable pour ce dossier"));
 
@@ -120,7 +136,13 @@ public class SignatureService {
 
     @Transactional
     public SignatureParcoursDto validerOtpEtSigner(String reference, ValiderOtpRequest request) {
+        if (request == null || request.getTypeSignataire() == null || request.getCodeOtp() == null || request.getCodeOtp().isBlank()) {
+            throw new IllegalArgumentException("Le type de signataire et le code OTP sont obligatoires");
+        }
+
         Dossier dossier = dossierService.trouverParReference(reference);
+        initialiserOuObtenirParcours(reference);
+
         SignatureDigitale sig = signatureDigitaleRepository.findByDossierAndTypeSignataire(dossier, request.getTypeSignataire())
                 .orElseThrow(() -> new ResourceNotFoundException("Signataire " + request.getTypeSignataire() + " introuvable"));
 

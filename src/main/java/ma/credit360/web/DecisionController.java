@@ -36,7 +36,10 @@ public class DecisionController {
     @Operation(summary = "Enregistrer une décision (Validation, Refus, Ajournement)")
     public ResponseEntity<DecisionResponseDto> enregistrerDecision(
             @PathVariable("reference") String reference,
-            @Valid @RequestBody DecisionRequest request) {
+            @Valid @RequestBody(required = false) DecisionRequest request) {
+        if (request == null || request.getTypeDecision() == null) {
+            throw new IllegalArgumentException("Le corps de la requête et le type de décision (VALIDATION, REFUS, AJOURNEMENT, DEMANDE_COMPLEMENT) sont obligatoires");
+        }
         return ResponseEntity.status(HttpStatus.CREATED).body(decisionService.enregistrerDecision(reference, request));
     }
 

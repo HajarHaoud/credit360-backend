@@ -112,6 +112,14 @@ public class PieceService {
 
     @Transactional
     public FichierPieceDto deposerPiece(String reference, Long pieceId, MultipartFile file) {
+        if (pieceId == null) {
+            throw new IllegalArgumentException("L'identifiant de la pièce est obligatoire");
+        }
+
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("Le fichier envoyé est vide ou manquant");
+        }
+
         Dossier dossier = dossierService.trouverParReference(reference);
         dossierService.verifierAccesDossier(dossier);
 
@@ -120,18 +128,16 @@ public class PieceService {
         }
 
         PieceRequise pieceRequise = pieceRequiseRepository.findById(pieceId)
-                .orElseThrow(() -> new ResourceNotFoundException("Pièce requise introuvable avec l'ID: " + pieceId));
+                .orElseGet(() -> pieceDeposeeRepository.findById(pieceId)
+                        .map(PieceDeposee::getPieceRequise)
+                        .orElseThrow(() -> new ResourceNotFoundException("Pièce introuvable avec l'ID: " + pieceId)));
 
         if (!pieceRequise.getTypeCredit().getId().equals(dossier.getTypeCredit().getId())) {
             throw new BusinessException("Cette pièce ne fait pas partie du référentiel du crédit sélectionné");
         }
 
-        if (file.isEmpty()) {
-            throw new BusinessException("Le fichier envoyé est vide");
-        }
-
         if (file.getSize() > MAX_FILE_SIZE) {
-            throw new BusinessException("La taille du fichier dépasse la limite maximale autorisée de 5 Mo");
+            throw new IllegalArgumentException("La taille du fichier dépasse la limite maximale autorisée de 5 Mo");
         }
 
         // Valider le format réel du fichier par analyse des octets magiques
@@ -290,14 +296,17 @@ public class PieceService {
     }
 
     private String validerEtDetecterTypeFichier(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("Fichier manquant ou vide");
+        }
         byte[] magic = new byte[8];
         try (InputStream is = file.getInputStream()) {
             int read = is.read(magic);
             if (read < 4) {
-                throw new BusinessException("Fichier non reconnu ou corrompu");
+                throw new IllegalArgumentException("Fichier corrompu ou trop petit pour être analysé");
             }
         } catch (IOException e) {
-            throw new BusinessException("Erreur de lecture du fichier");
+            throw new IllegalArgumentException("Erreur de lecture du fichier uploadé");
         }
 
         // PDF: %PDF -> 0x25 0x50 0x44 0x46
@@ -313,6 +322,6 @@ public class PieceService {
             return "image/png";
         }
 
-        throw new BusinessException("Format de fichier non supporté. Seuls les formats PDF, JPG et PNG sont acceptés.");
+        throw new IllegalArgumentException("Format de fichier non supporté. Seuls les formats PDF, JPG et PNG sont acceptés.");
     }
 }

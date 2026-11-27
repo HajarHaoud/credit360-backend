@@ -50,15 +50,24 @@ public class DecisionService {
 
     @Transactional
     public DecisionResponseDto enregistrerDecision(String reference, DecisionRequest request) {
+        if (request == null || request.getTypeDecision() == null) {
+            throw new IllegalArgumentException("Le type de décision (VALIDATION, REFUS, AJOURNEMENT, DEMANDE_COMPLEMENT) est obligatoire");
+        }
+
         Dossier dossier = dossierService.trouverParReference(reference);
         Utilisateur currentUser = authService.getCurrentUser();
+
+        // Vérification de l'étape du dossier
+        if (dossier.getStatut() == StatutDossier.A_COMPLETER) {
+            throw new BusinessException("Impossible d'enregistrer une décision : le dossier est en cours de constitution et n'a pas encore été soumis à l'analyse");
+        }
 
         if (dossier.getStatut() == StatutDossier.ACCEPTE || dossier.getStatut() == StatutDossier.REFUSE || dossier.getStatut() == StatutDossier.ANNULE) {
             throw new BusinessException("Impossible de prendre une décision sur un dossier clôturé (" + dossier.getStatut().getLibelle() + ")");
         }
 
         if (request.getTypeDecision() == TypeDecision.REFUS && (request.getMotif() == null || request.getMotif().isBlank())) {
-            throw new BusinessException("Un motif explicatif est obligatoire pour tout refus de crédit");
+            throw new IllegalArgumentException("Un motif explicatif est obligatoire pour tout refus de crédit");
         }
 
         double montantCible = request.getMontantAccorde() != null ? request.getMontantAccorde() : dossier.getMontant();
@@ -75,7 +84,8 @@ public class DecisionService {
         decision.setTypeDecision(request.getTypeDecision());
         decision.setMontantAccorde(request.getMontantAccorde() != null ? request.getMontantAccorde() : dossier.getMontant());
         decision.setDureeAccordee(request.getDureeAccordee() != null ? request.getDureeAccordee() : dossier.getDuree());
-        decision.setTauxAccorde(request.getTauxAccorde() != null ? request.getTauxAccorde() : dossier.getTypeCredit().getTaux());
+        Double tauxParDefaut = (dossier.getTypeCredit() != null && dossier.getTypeCredit().getTaux() != null) ? dossier.getTypeCredit().getTaux() : 5.0;
+        decision.setTauxAccorde(request.getTauxAccorde() != null ? request.getTauxAccorde() : tauxParDefaut);
         decision.setMotif(request.getMotif());
         decision.setDecidePar(currentUser);
         decision = decisionRepository.save(decision);

@@ -38,7 +38,10 @@ public class PieceController {
     public ResponseEntity<FichierPieceDto> deposerPiece(
             @PathVariable("reference") String reference,
             @PathVariable("pieceId") Long pieceId,
-            @RequestParam("fichier") MultipartFile fichier) {
+            @RequestParam(name = "fichier", required = false) MultipartFile fichier) {
+        if (fichier == null || fichier.isEmpty()) {
+            throw new IllegalArgumentException("Le paramètre 'fichier' est obligatoire et ne peut pas être vide");
+        }
         return ResponseEntity.status(HttpStatus.CREATED).body(pieceService.deposerPiece(reference, pieceId, fichier));
     }
 

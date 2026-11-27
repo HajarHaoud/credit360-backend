@@ -33,6 +33,9 @@ public class Utilisateur {
     private LocalDateTime dateCreation;
     private LocalDateTime dateMaj;
 
+    private String resetToken;
+    private LocalDateTime resetTokenExpiresAt;
+
     public Utilisateur() {}
 
     public Utilisateur(String nom, String email, String motDePasse, Role role, String fonction) {
@@ -82,4 +85,10 @@ public class Utilisateur {
 
     public LocalDateTime getDateMaj() { return dateMaj; }
     public void setDateMaj(LocalDateTime dateMaj) { this.dateMaj = dateMaj; }
+
+    public String getResetToken() { return resetToken; }
+    public void setResetToken(String resetToken) { this.resetToken = resetToken; }
+
+    public LocalDateTime getResetTokenExpiresAt() { return resetTokenExpiresAt; }
+    public void setResetTokenExpiresAt(LocalDateTime resetTokenExpiresAt) { this.resetTokenExpiresAt = resetTokenExpiresAt; }
 }

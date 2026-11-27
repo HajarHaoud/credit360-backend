@@ -18,6 +18,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 @Service
 public class AuthService {
 
@@ -92,10 +95,20 @@ public class AuthService {
 
     @Transactional
     public void changePassword(ChangePasswordRequest request) {
+        if (request == null || request.getAncienMotDePasse() == null || request.getNouveauMotDePasse() == null) {
+            throw new IllegalArgumentException("L'ancien et le nouveau mot de passe sont obligatoires");
+        }
+
         Utilisateur user = getCurrentUser();
 
         if (!passwordEncoder.matches(request.getAncienMotDePasse(), user.getMotDePasse())) {
             throw new BusinessException("L'ancien mot de passe est incorrect");
+        }
+
+        // Faille de validation : interdire de réutiliser le même mot de passe
+        if (request.getNouveauMotDePasse().equals(request.getAncienMotDePasse()) ||
+            passwordEncoder.matches(request.getNouveauMotDePasse(), user.getMotDePasse())) {
+            throw new IllegalArgumentException("Le nouveau mot de passe doit être différent de l'ancien mot de passe");
         }
 
         if (!request.getNouveauMotDePasse().equals(request.getConfirmationMotDePasse())) {
@@ -109,19 +122,62 @@ public class AuthService {
     }
 
     @Transactional
-    public void forgotPassword(String email) {
+    public String forgotPassword(String email) {
+        if (email == null || email.isBlank()) {
+            throw new IllegalArgumentException("L'email est obligatoire");
+        }
         Utilisateur user = utilisateurRepository.findByEmail(email).orElse(null);
         if (user != null) {
+            String token = UUID.randomUUID().toString().replace("-", "");
+            user.setResetToken(token);
+            user.setResetTokenExpiresAt(LocalDateTime.now().plusHours(1));
+            utilisateurRepository.save(user);
             auditService.tracerUtilisateur(user, "DEMANDE_RESET_MDP", "AUTH", email, "Demande de réinitialisation de mot de passe");
+            return token;
         }
+        return null;
     }
 
     @Transactional
     public void resetPassword(ResetPasswordRequest request) {
+        if (request == null || request.getToken() == null || request.getToken().isBlank()) {
+            throw new IllegalArgumentException("Le token de réinitialisation est obligatoire");
+        }
+
         Utilisateur user = utilisateurRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new ResourceNotFoundException("Utilisateur non trouvé avec cet email"));
 
+        // Faille de sécurité : validation stricte du token de réinitialisation
+        boolean tokenValide = false;
+
+        // 1. Vérification si le token correspond au resetToken stocké et valide
+        if (user.getResetToken() != null && user.getResetToken().equals(request.getToken())) {
+            if (user.getResetTokenExpiresAt() != null && user.getResetTokenExpiresAt().isAfter(LocalDateTime.now())) {
+                tokenValide = true;
+            }
+        }
+
+        // 2. Ou si le token est un JWT valide émis pour cet utilisateur
+        if (!tokenValide && tokenProvider.validateToken(request.getToken())) {
+            String emailFromToken = tokenProvider.getEmailFromToken(request.getToken());
+            if (user.getEmail().equalsIgnoreCase(emailFromToken)) {
+                tokenValide = true;
+            }
+        }
+
+        if (!tokenValide) {
+            auditService.tracerUtilisateur(user, "ECHEC_RESET_MDP", "AUTH", user.getEmail(), "Tentative de réinitialisation avec un token invalide");
+            throw new BadCredentialsException("Token de réinitialisation invalide ou expiré");
+        }
+
+        // Vérification que le nouveau mot de passe est différent
+        if (passwordEncoder.matches(request.getNouveauMotDePasse(), user.getMotDePasse())) {
+            throw new IllegalArgumentException("Le nouveau mot de passe doit être différent de l'ancien mot de passe");
+        }
+
         user.setMotDePasse(passwordEncoder.encode(request.getNouveauMotDePasse()));
+        user.setResetToken(null);
+        user.setResetTokenExpiresAt(null);
         utilisateurRepository.save(user);
 
         auditService.tracerUtilisateur(user, "RESET_MDP", "AUTH", user.getEmail(), "Réinitialisation effectuée avec succès");

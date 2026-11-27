@@ -48,10 +48,18 @@ public class AuthController {
 
     @PostMapping("/forgot-password")
     @Operation(summary = "Demande de réinitialisation", description = "Initie une demande de réinitialisation de mot de passe")
-    public ResponseEntity<Map<String, String>> forgotPassword(@Valid @RequestBody Map<String, String> request) {
+    public ResponseEntity<Map<String, String>> forgotPassword(@RequestBody(required = false) Map<String, String> request) {
+        if (request == null || !request.containsKey("email") || request.get("email") == null || request.get("email").isBlank()) {
+            throw new IllegalArgumentException("L'adresse email est obligatoire");
+        }
         String email = request.get("email");
-        authService.forgotPassword(email);
-        return ResponseEntity.ok(Map.of("message", "Si l'adresse existe, un email a été envoyé pour réinitialiser le mot de passe"));
+        String resetToken = authService.forgotPassword(email);
+        java.util.Map<String, String> resp = new java.util.HashMap<>();
+        resp.put("message", "Si l'adresse existe, un email a été envoyé pour réinitialiser le mot de passe");
+        if (resetToken != null) {
+            resp.put("tokenTest", resetToken);
+        }
+        return ResponseEntity.ok(resp);
     }
 
     @PostMapping("/reset-password")

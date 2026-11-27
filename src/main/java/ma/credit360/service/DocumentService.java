@@ -73,6 +73,10 @@ public class DocumentService {
 
     @Transactional
     public DocumentDto genererDocument(String reference, GenerateDocumentRequest request) {
+        if (request == null || request.getTypeDocument() == null) {
+            throw new IllegalArgumentException("Le type de document est obligatoire (OFFRE_DE_PRET, CONTRAT, ATTESTATION, FICHE_SYNTHESE)");
+        }
+
         Dossier dossier = dossierService.trouverParReference(reference);
         dossierService.verifierAccesDossier(dossier);
 

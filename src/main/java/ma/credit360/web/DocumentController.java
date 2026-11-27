@@ -36,7 +36,10 @@ public class DocumentController {
     @Operation(summary = "Générer un document officiel (PDF) pour le dossier")
     public ResponseEntity<DocumentDto> genererDocument(
             @PathVariable("reference") String reference,
-            @Valid @RequestBody GenerateDocumentRequest request) {
+            @Valid @RequestBody(required = false) GenerateDocumentRequest request) {
+        if (request == null || request.getTypeDocument() == null) {
+            throw new IllegalArgumentException("Le corps de la requête et le type de document (OFFRE_DE_PRET, CONTRAT, ATTESTATION, FICHE_SYNTHESE) sont obligatoires");
+        }
         return ResponseEntity.status(HttpStatus.CREATED).body(documentService.genererDocument(reference, request));
     }
 

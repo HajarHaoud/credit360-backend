@@ -36,7 +36,10 @@ public class SignatureController {
     @Operation(summary = "Demander l'envoi d'un code OTP sécurisé par SMS/Email pour signature")
     public ResponseEntity<Map<String, String>> envoyerOtp(
             @PathVariable("reference") String reference,
-            @RequestParam(name = "signataire") TypeSignataire signataire) {
+            @RequestParam(name = "signataire", required = false) TypeSignataire signataire) {
+        if (signataire == null) {
+            throw new IllegalArgumentException("Le paramètre 'signataire' (CLIENT, CONSEILLER, RESPONSABLE) est obligatoire");
+        }
         String otp = signatureService.envoyerOtp(reference, signataire);
         return ResponseEntity.ok(Map.of(
                 "message", "Code OTP généré et transmis au " + signataire.getLibelle(),
@@ -48,7 +51,10 @@ public class SignatureController {
     @Operation(summary = "Valider le code OTP et apposer la signature électronique certifiée")
     public ResponseEntity<SignatureParcoursDto> validerOtpEtSigner(
             @PathVariable("reference") String reference,
-            @Valid @RequestBody ValiderOtpRequest request) {
+            @Valid @RequestBody(required = false) ValiderOtpRequest request) {
+        if (request == null || request.getTypeSignataire() == null || request.getCodeOtp() == null || request.getCodeOtp().isBlank()) {
+            throw new IllegalArgumentException("Le type de signataire et le code OTP sont obligatoires");
+        }
         return ResponseEntity.ok(signatureService.validerOtpEtSigner(reference, request));
     }
 
